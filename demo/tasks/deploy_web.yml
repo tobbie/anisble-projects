@@ -1,0 +1,29 @@
+      - name: Install Python Flask Dependency
+        pip: 
+          name: '{{ item }}'
+          state: present 
+        with_items:
+          - flask
+          - flask-mysql
+
+      - name: Copy source code to target server
+        copy:
+          src: app.py
+          dest: /opt/app.py
+          mode: 0644
+        
+      
+      - name: Start Web Server
+        shell: FLASK_APP=/opt/app.py nohup /usr/local/bin/flask run --host=0.0.0.0 &
+        register: myoutput
+        changed_when: myoutput.rc != 0
+
+      - name: Open port 5000 in the firewall
+        command: firewall-cmd --zone=public --add-port=5000/tcp --permanent
+        register: myoutput
+        changed_when: myoutput.rc != 0
+
+      - name: Reload firewall to apply changes
+        command: firewall-cmd --reload
+        register: myoutput
+        changed_when: myoutput.rc != 0

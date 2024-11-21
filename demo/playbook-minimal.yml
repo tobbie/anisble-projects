@@ -1,0 +1,45 @@
+  - name: Deploy a web application
+    hosts: servers
+    become: yes
+    tasks:
+      - name: Install all required dependencies
+        dnf:
+          name: '{{ item }}'
+          state: present
+        with_items:
+          - python
+          - python-setuptools
+          - "@Development Tools"
+          - python3-devel
+          - python-pip
+      
+      - name: Install Python Flask Dependency
+        pip: 
+          name: '{{ item }}'
+          state: present 
+        with_items:
+          - flask
+          - flask-mysql
+
+      - name: Copy source code to target server
+        copy:
+          src: app.py
+          dest: /opt/app.py
+          mode: 0644
+        
+      
+      - name: Start Web Server
+        shell: FLASK_APP=/opt/app.py nohup /usr/local/bin/flask run --host=0.0.0.0 &
+        register: myoutput
+        changed_when: myoutput.rc != 0
+
+
+    
+#sudo firewall-cmd --zone=public --add-port=5000/tcp --permanent
+#sudo firewall-cmd --reload
+
+      
+    
+    
+
+     

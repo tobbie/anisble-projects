@@ -1,0 +1,43 @@
+  - name: Deploy a web application
+    hosts: db_and_web_servers
+    become: yes
+    tasks:
+      - name: Install all required dependencies
+        dnf:
+          name: '{{ item }}'
+          state: present
+        with_items:
+          - python
+          - python-setuptools
+          - "@Development Tools"
+          - python3-devel
+          - python-pip
+
+      - name: Include database deploy tasks
+        import_tasks:
+          file: tasks/deploy_db.yml
+
+      - name: Include web deploy tasks
+        import_tasks:
+          file: tasks/deploy_web.yml
+      
+      #- include: tasks/deploy_db.yml
+      #- include: tasks/deploy_web.yml
+        
+
+      
+     
+      
+      
+
+
+
+    
+#sudo firewall-cmd --zone=public --add-port=5000/tcp --permanent
+#sudo firewall-cmd --reload
+
+      
+    
+    
+
+     

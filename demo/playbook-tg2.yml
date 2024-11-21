@@ -1,0 +1,100 @@
+  - name: Deploy a web application
+    hosts: servers
+    become: yes
+    tasks:
+      - name: Install all required dependencies
+        dnf:
+          name: '{{ item }}'
+          state: present
+        with_items:
+          - python
+          - python-setuptools
+          - "@Development Tools"
+          - python3-devel
+          - python-pip
+
+      
+      - name: Install MariaDB Server and Client
+        dnf:
+          name: '{{ item }}'
+          state: present
+        with_items:
+          - mariadb-server
+          - mariadb
+        
+      - name: Start MariaDB Service
+        service:
+          name: mariadb
+          state: started
+          enabled: yes
+
+      - name: Verify MariaDB Installation 
+        command: mysql -V
+        register: myoutput
+        changed_when: myoutput.rc != 0
+
+      - name: Install PyMySQL for Python 3.x to connect with MariaDB
+        pip:
+          name: PyMySQL
+          state: present
+          executable: /usr/bin/pip3 
+        
+      - name: Create Application Database
+        mysql_db:
+          name: employee_db
+          state: present
+          login_user: root
+          login_unix_socket: /var/lib/mysql/mysql.sock 
+        
+      
+      - name: Create Database User
+        mysql_user:
+          name: db_user
+          password: Passw0rd
+          priv:  '*.*:ALL'
+          state: present
+          host: '%'
+          login_user: root
+          login_unix_socket: /var/lib/mysql/mysql.sock 
+      
+      - name: Install Python Flask Dependency
+        pip: 
+          name: '{{ item }}'
+          state: present 
+        with_items:
+          - flask
+          - flask-mysql
+
+      - name: Copy source code to target server
+        copy:
+          src: app.py
+          dest: /opt/app.py
+          mode: 0644
+        
+      
+      - name: Start Web Server
+        shell: FLASK_APP=/opt/app.py nohup /usr/local/bin/flask run --host=0.0.0.0 &
+        register: myoutput
+        changed_when: myoutput.rc != 0
+
+      - name: Open port 5000 in the firewall
+        command: firewall-cmd --zone=public --add-port=5000/tcp --permanent
+        register: myoutput
+        changed_when: myoutput.rc != 0
+
+      - name: Reload firewall to apply changes
+        command: firewall-cmd --reload
+        register: myoutput
+        changed_when: myoutput.rc != 0
+
+
+
+    
+#sudo firewall-cmd --zone=public --add-port=5000/tcp --permanent
+#sudo firewall-cmd --reload
+
+      
+    
+    
+
+     

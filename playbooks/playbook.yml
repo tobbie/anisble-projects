@@ -1,0 +1,7 @@
+- name: 'Test playbook'
+  hosts: hjj
+  become: yes
+  tasks:
+   
+      
+    
