@@ -1,6 +1,0 @@
-db_and_web_server1 ansible_host=192.168.1.215 ansible_ssh_pass=osboxes.org ansible_user=osboxes ansible_become_password=osboxes.org
-db_and_web_server2 ansible_host=192.168.1.23 ansible_ssh_pass=osboxes.org ansible_user=osboxes ansible_become_password=osboxes.org
-
-[db_and_web_servers]
-db_and_web_server1
-db_and_web_server2

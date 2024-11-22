@@ -1,0 +1,44 @@
+---
+# tasks file for mariadb_sql
+      - name: Install MariaDB Server and Client
+        dnf:
+          name: '{{ item }}'
+          state: present
+        with_items:
+          - mariadb-server
+          - mariadb
+        
+      - name: Start MariaDB Service
+        service:
+          name: mariadb
+          state: started
+          enabled: yes
+
+      - name: Verify MariaDB Installation 
+        command: mysql -V
+        register: myoutput
+        changed_when: myoutput.rc != 0
+
+      - name: Install PyMySQL for Python 3.x to connect with MariaDB
+        pip:
+          name: PyMySQL
+          state: present
+          executable: /usr/bin/pip3 
+        
+      - name: Create Application Database
+        mysql_db:
+          name: '{{ db_name }}'
+          state: present
+          login_user: root
+          login_unix_socket: /var/lib/mysql/mysql.sock 
+        
+      
+      - name: Create Database User
+        mysql_user:
+          name: '{{ db_user }}'
+          password: '{{ db_user_password }}'
+          priv:  '*.*:ALL'
+          state: present
+          host: '%'
+          login_user: root
+          login_unix_socket: /var/lib/mysql/mysql.sock 
